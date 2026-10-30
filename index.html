@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#08050d" />
+  <meta name="description" content="MAWLING — a pixel-art monster game. Rip the villagers apart, devour what remains, and grow into something worse." />
+  <title>MAWLING — The Village Is Meat</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2308050d'/%3E%3Cpath d='M8 6l4 8-4 2v10h16V16l-4-2 4-8-6 5-2-5-2 5z' fill='%23b92646'/%3E%3Ccircle cx='12' cy='20' r='2' fill='%23ffd76a'/%3E%3Ccircle cx='20' cy='20' r='2' fill='%23ffd76a'/%3E%3C/svg%3E" />
+  <script>
+    (function () {
+      var set = document.fonts;
+      if (!set) return;
+      var start = performance.now();
+      var proto = Object.getPrototypeOf(set);
+      var descriptor = Object.getOwnPropertyDescriptor(proto, 'status');
+      if (!descriptor || !descriptor.get) return;
+      Object.defineProperty(set, 'status', {
+        configurable: true,
+        get: function () {
+          if (performance.now() - start < 2400) return 'loading';
+          return descriptor.get.call(set);
+        }
+      });
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="stage" class="stage is-menu">
+    <canvas id="game" width="640" height="400" aria-label="Mawling, a top-down pixel art monster game"></canvas>
+
+    <div class="hud" id="hud" aria-hidden="true">
+      <div class="hud-left">
+        <div class="level-badge">
+          <span class="level-word">LV</span>
+          <strong id="levelValue">1</strong>
+        </div>
+        <div class="bars">
+          <div class="bar bar-hp">
+            <span class="bar-label">VITALITY</span>
+            <div class="bar-track"><i id="hpFill"></i></div>
+            <span class="bar-num" id="hpText">100</span>
+          </div>
+          <div class="bar bar-xp">
+            <span class="bar-label">EVOLUTION</span>
+            <div class="bar-track"><i id="xpFill"></i></div>
+            <span class="bar-num" id="xpText">0/16</span>
+          </div>
+          <div class="bar bar-lust">
+            <span class="bar-label">BLOODLUST</span>
+            <div class="bar-track"><i id="lustFill"></i></div>
+            <span class="bar-num" id="lustText">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="night-plate">
+          <span>NIGHT</span>
+          <strong id="nightValue">I</strong>
+        </div>
+        <div class="stat-line"><span>PREY</span><strong id="preyValue">0</strong></div>
+        <div class="stat-line"><span>SOULS</span><strong id="soulsValue">0</strong></div>
+      </div>
+    </div>
+
+    <div class="boss-bar" id="bossBar" aria-hidden="true">
+      <span id="bossName">THE WARDEN</span>
+      <div class="boss-track"><i id="bossFill"></i></div>
+    </div>
+
+    <div class="combo" id="combo"><span id="comboNum">2</span><em>REND</em></div>
+
+    <div class="devour-prompt" id="devourPrompt">
+      <kbd>E</kbd><span>DEVOUR THE REMAINS</span>
+    </div>
+
+    <div class="banner" id="banner" aria-live="polite">
+      <span class="banner-kicker" id="bannerKicker">NIGHT I</span>
+      <strong class="banner-title" id="bannerTitle">THE HUNT BEGINS</strong>
+      <span class="banner-sub" id="bannerSub">Rip them apart. Eat what is left.</span>
+    </div>
+
+    <div class="controls-legend" id="controlsLegend" aria-hidden="true">
+      <span><kbd>WASD</kbd> MOVE</span>
+      <span><kbd>LMB</kbd> RIP</span>
+      <span><kbd>E</kbd> EAT</span>
+      <span><kbd>SHIFT</kbd> LUNGE</span>
+    </div>
+
+    <button class="sound-toggle" id="soundToggle" type="button" aria-label="Toggle sound">SOUND ON</button>
+
+    <section class="overlay menu" id="menu" aria-label="Main menu">
+      <div class="menu-inner">
+        <p class="menu-kicker">THE VILLAGE IS MEAT</p>
+        <h1 class="logo" data-text="MAWLING">MAWLING</h1>
+        <p class="menu-tagline">You are the thing beneath the floorboards.<br />Rip them apart. Devour what remains. Grow hungry.</p>
+        <div class="menu-rule"><i></i><span>RIP &nbsp;•&nbsp; FEED &nbsp;•&nbsp; EVOLVE</span><i></i></div>
+        <button class="play-button" id="playButton" type="button">PLAY</button>
+        <div class="menu-controls">
+          <span><kbd>WASD</kbd><b>MOVE</b></span>
+          <span><kbd>MOUSE</kbd><b>AIM</b></span>
+          <span><kbd>LMB / SPACE</kbd><b>RIP</b></span>
+          <span><kbd>E</kbd><b>DEVOUR</b></span>
+          <span><kbd>SHIFT</kbd><b>LUNGE</b></span>
+        </div>
+        <p class="menu-foot">A top-down pixel nightmare &nbsp;·&nbsp; No one gets out whole</p>
+      </div>
+    </section>
+
+    <section class="overlay death" id="deathScreen" aria-label="Game over" hidden>
+      <div class="death-inner">
+        <p class="death-kicker">THE HUNT ENDS</p>
+        <h2 class="death-title">MEAT<br />AGAIN</h2>
+        <p class="death-copy">They dragged you into the light. The hunger remains.</p>
+        <div class="death-stats">
+          <div><span>NIGHT</span><strong id="deathNight">I</strong></div>
+          <div><span>SOULS</span><strong id="deathSouls">0</strong></div>
+          <div><span>LEVEL</span><strong id="deathLevel">1</strong></div>
+          <div><span>DEVOURED</span><strong id="deathEaten">0</strong></div>
+        </div>
+        <button class="play-button death-button" id="againButton" type="button">RISE AGAIN</button>
+        <p class="death-foot">PRESS <kbd>R</kbd> TO HUNT AGAIN</p>
+      </div>
+    </section>
+
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="damage-flash" id="damageFlash" aria-hidden="true"></div>
+
+    <div class="mobile-controls" id="mobileControls" aria-hidden="true">
+      <div class="stick-zone" id="stickZone">
+        <div class="stick-base"><div class="stick-knob" id="stickKnob"></div></div>
+      </div>
+      <div class="touch-actions">
+        <button class="touch-btn touch-eat" id="touchEat" type="button" aria-label="Devour">EAT</button>
+        <button class="touch-btn touch-dash" id="touchDash" type="button" aria-label="Lunge">LUNGE</button>
+        <button class="touch-btn touch-rip" id="touchRip" type="button" aria-label="Rip">RIP</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p class="noscript">MAWLING requires JavaScript. The hunger needs a host.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
