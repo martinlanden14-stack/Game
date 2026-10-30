@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0e14" />
+  <meta name="description" content="Grind City — a 3D street skateboarding game. Carve the plaza, stack combos, and own the city." />
+  <title>GRIND CITY — 3D Skateboarding</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0e14'/%3E%3Cpath d='M14 38c6 9 30 9 36 0' stroke='%2338e8c8' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M20 30c8-6 16-6 24 0' stroke='%23ff6b35' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene" aria-label="Grind City skatepark"></canvas>
+
+    <div class="atmosphere" aria-hidden="true">
+      <div class="vignette"></div>
+      <div class="grain"></div>
+      <div class="scanlines"></div>
+    </div>
+
+    <!-- ============================ HUD ============================ -->
+    <section id="hud" class="hud is-hidden" aria-live="polite">
+      <div class="hud-top">
+        <div class="hud-score glass">
+          <span class="hud-label">SCORE</span>
+          <strong id="hud-score">0</strong>
+          <span id="hud-best" class="hud-best">BEST 0</span>
+        </div>
+
+        <div class="hud-objective glass">
+          <div class="obj-head">
+            <span id="hud-event" class="hud-label">FREE SKATE</span>
+            <span id="hud-objective-progress" class="obj-progress">0 / 0</span>
+          </div>
+          <div id="hud-objective" class="obj-text">Ride the park. Stack a combo.</div>
+          <div class="obj-bar"><i id="hud-objective-bar"></i></div>
+        </div>
+
+        <div class="hud-timer glass">
+          <span class="hud-label">TIME</span>
+          <strong id="hud-time">--:--</strong>
+          <button id="pause-btn" class="icon-btn" aria-label="Pause game">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="hud-left">
+        <div class="combo-wrap" id="combo-wrap">
+          <div id="combo-mult" class="combo-mult">x1</div>
+          <div class="combo-meta">
+            <span class="hud-label">COMBO</span>
+            <div class="combo-bar"><i id="combo-bar"></i></div>
+          </div>
+        </div>
+        <div class="speed-wrap">
+          <span class="hud-label">SPEED</span>
+          <div class="speed-readout"><strong id="hud-speed">0</strong><span>KPH</span></div>
+          <div class="speed-bar"><i id="speed-bar"></i></div>
+        </div>
+      </div>
+
+      <div id="trick-feed" class="trick-feed"></div>
+      <div id="air-meter" class="air-meter is-hidden">
+        <span>AIR</span><div class="air-bar"><i id="air-bar"></i></div>
+      </div>
+
+      <div id="balance" class="balance is-hidden">
+        <span class="hud-label">BALANCE</span>
+        <div class="balance-track"><i id="balance-marker"></i><b class="balance-zone"></b></div>
+      </div>
+
+      <div id="letters" class="letters is-hidden" aria-label="S-K-A-T-E letters collected">
+        <span data-letter="S">S</span><span data-letter="K">K</span><span data-letter="A">A</span><span data-letter="T">T</span><span data-letter="E">E</span>
+      </div>
+
+      <div id="context-prompt" class="context-prompt is-hidden">
+        <span class="key">SPACE</span><span id="context-text">OLLIE TO GRIND</span>
+      </div>
+
+      <!-- Touch controls -->
+      <div id="touch-controls" class="touch-controls is-hidden" aria-hidden="false">
+        <div id="joystick" class="joystick">
+          <div class="joystick-ring"></div>
+          <div id="joystick-knob" class="joystick-knob"></div>
+        </div>
+        <div class="touch-buttons">
+          <button id="btn-flip" class="touch-btn touch-btn--small" data-action="flip">FLIP</button>
+          <button id="btn-spin" class="touch-btn touch-btn--small" data-action="spin">SPIN</button>
+          <button id="btn-grab" class="touch-btn touch-btn--small" data-action="grab">GRAB</button>
+          <button id="btn-ollie" class="touch-btn touch-btn--ollie" data-action="ollie">OLLIE</button>
+        </div>
+      </div>
+
+      <div id="toast" class="toast is-hidden"></div>
+    </section>
+
+    <!-- ============================ MENU ============================ -->
+    <section id="menu" class="screen menu">
+      <header class="menu-top">
+        <div class="brand">
+          <span class="brand-mark">GC</span>
+          <span class="brand-word">GRIND CITY</span>
+        </div>
+        <div class="menu-top-right">
+          <span class="live-pill"><i></i> PARK OPEN</span>
+          <button id="sound-toggle" class="chip-btn" aria-label="Toggle sound">
+            <svg class="ico-on" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5c1.2 1 1.8 2.1 1.8 3.5s-.6 2.5-1.8 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            <svg class="ico-off" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M17 9l4 6M21 9l-4 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span id="sound-label">SOUND</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="menu-hero">
+        <div class="menu-copy">
+          <p class="eyebrow"><i></i> STREET SKATE SIM — GOLDEN HOUR</p>
+          <h1 class="title">GRIND<br><span>CITY</span></h1>
+          <p class="tagline">Carve the plaza. Stack the combo.<br>Make the city yours.</p>
+          <div class="menu-actions">
+            <button id="btn-career" class="btn btn-primary">
+              <span class="btn-kicker">8 EVENTS · ~30 MIN</span>
+              <span class="btn-label">PLAY CAREER</span>
+              <span class="btn-arrow">→</span>
+            </button>
+            <div class="btn-row">
+              <button id="btn-free" class="btn btn-ghost">FREE SKATE</button>
+              <button id="btn-events" class="btn btn-ghost">EVENTS</button>
+            </div>
+          </div>
+          <div class="menu-stats">
+            <div><span>BEST SCORE</span><strong id="menu-best">0</strong></div>
+            <div><span>CAREER</span><strong id="menu-progress">0 / 8</strong></div>
+            <div><span>BEST COMBO</span><strong id="menu-combo">x1</strong></div>
+          </div>
+        </div>
+
+        <div class="menu-side">
+          <div class="floating-card glass">
+            <span class="card-label">FEATURED SPOT</span>
+            <strong>THE BACKYARD</strong>
+            <p>Quarter pipe · over-vert air · letter lines</p>
+            <span class="card-tag">DROP IN <i>→</i></span>
+          </div>
+          <div class="controls-card glass">
+            <span class="card-label">CONTROLS</span>
+            <div class="control-row"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Ride &amp; carve</span></div>
+            <div class="control-row"><span class="keys"><kbd>SPACE</kbd></span><span>Ollie</span></div>
+            <div class="control-row"><span class="keys"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></span><span>Flip · Spin · Grab</span></div>
+            <div class="control-row touch-only"><span class="keys"><kbd>STICK</kbd><kbd>A</kbd></span><span>Touch controls auto-show</span></div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="menu-foot">
+        <span class="foot-hint">PRESS <kbd>ENTER</kbd> TO DROP IN</span>
+        <span class="foot-meta">PROCEDURAL PARK · 60 FPS · NO DOWNLOADS</span>
+        <span class="foot-credit">GRIND CITY © 2026</span>
+      </footer>
+    </section>
+
+    <!-- ============================ EVENTS ============================ -->
+    <section id="events" class="screen panel-screen is-hidden">
+      <header class="panel-top">
+        <div>
+          <p class="eyebrow"><i></i> CAREER MODE</p>
+          <h2 class="panel-title">PICK YOUR <span>SESSION</span></h2>
+        </div>
+        <button id="events-back" class="btn btn-ghost btn-small">← BACK</button>
+      </header>
+      <div id="event-grid" class="event-grid"></div>
+      <p class="panel-note">Complete an event to unlock the next. Every run counts toward your best score.</p>
+    </section>
+
+    <!-- ============================ RESULTS ============================ -->
+    <section id="results" class="screen panel-screen results-screen is-hidden">
+      <div class="results-inner">
+        <p id="result-eyebrow" class="eyebrow"><i></i> SESSION COMPLETE</p>
+        <h2 id="result-title" class="panel-title">OBJECTIVE <span>CLEAR</span></h2>
+        <div class="result-score"><span>FINAL SCORE</span><strong id="result-score">0</strong><em id="result-best">NEW BEST</em></div>
+        <div class="result-stats">
+          <div><span>TRICKS</span><strong id="result-tricks">0</strong></div>
+          <div><span>GRIND</span><strong id="result-grind">0 m</strong></div>
+          <div><span>AIR TIME</span><strong id="result-air">0.0 s</strong></div>
+          <div><span>BEST COMBO</span><strong id="result-combo">x1</strong></div>
+        </div>
+        <div id="result-objective" class="result-objective"><span class="tick">✓</span><span id="result-objective-text">Score 8,000 points</span></div>
+        <div class="result-actions">
+          <button id="result-next" class="btn btn-primary"><span class="btn-label">NEXT EVENT</span><span class="btn-arrow">→</span></button>
+          <button id="result-retry" class="btn btn-ghost">RETRY</button>
+          <button id="result-menu" class="btn btn-ghost">MENU</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ PAUSE ============================ -->
+    <section id="pause" class="screen pause-screen is-hidden">
+      <div class="pause-card glass">
+        <p class="eyebrow"><i></i> PAUSED</p>
+        <h2 class="panel-title">CATCH YOUR <span>BREATH</span></h2>
+        <div class="pause-actions">
+          <button id="pause-resume" class="btn btn-primary"><span class="btn-label">RESUME</span><span class="btn-arrow">→</span></button>
+          <button id="pause-restart" class="btn btn-ghost">RESTART RUN</button>
+          <button id="pause-quit" class="btn btn-ghost">QUIT TO MENU</button>
+        </div>
+        <div class="pause-controls">
+          <span><kbd>WASD</kbd> RIDE</span><span><kbd>SPACE</kbd> OLLIE</span><span><kbd>J</kbd> FLIP</span><span><kbd>K</kbd> SPIN</span><span><kbd>L</kbd> GRAB</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ FEEDBACK ============================ -->
+    <div id="bail-flash" class="bail-flash is-hidden"><span>BAILED</span><small>COMBO LOST</small></div>
+    <div id="goal-flash" class="goal-flash is-hidden"><span>GOAL COMPLETE</span><small id="goal-flash-sub">KEEP ROLLING</small></div>
+    <div id="countdown" class="countdown is-hidden"><span>3</span></div>
+
+    <div id="loading" class="loading">
+      <div class="loader-logo">GC</div>
+      <div class="loader-bar"><i></i></div>
+      <p>BUILDING THE PARK</p>
+    </div>
+
+    <div id="rotate-hint" class="rotate-hint">
+      <span>↻</span>
+      <p>Rotate your phone for the full park</p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
