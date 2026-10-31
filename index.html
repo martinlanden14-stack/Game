@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#07090b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23090c0e'/%3E%3Cpath d='M2.5 13.5L10.5 2.5l3 3L5.5 16z' fill='%23c1121f'/%3E%3Cpath d='M9 3.5l3 3' stroke='%23e9e2cf' stroke-width='1'/%3E%3C/svg%3E">
+<title>CHAINSAW REQUIEM</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="frame">
+  <canvas id="game" aria-label="Chainsaw Requiem game canvas"></canvas>
+
+  <div id="fx-scanlines" aria-hidden="true"></div>
+  <div id="fx-grain" aria-hidden="true"></div>
+  <div id="fx-damage" aria-hidden="true"></div>
+  <div id="fx-frenzy" aria-hidden="true"></div>
+
+  <div id="title-screen" class="screen">
+    <div class="title-topline">
+      <span>BLACKPINE COUNTY</span><span class="slash">//</span><span>INCIDENT 07</span><span class="slash">//</span><span>NO SURVIVORS</span>
+    </div>
+    <div class="title-core">
+      <div class="eyebrow"><span class="pulse-dot"></span> A NIGHT SHIFT FROM HELL</div>
+      <h1 class="logo" aria-label="Chainsaw Requiem">
+        <span class="logo-line logo-white">CHAINSAW</span>
+        <span class="logo-line logo-red" data-text="REQUIEM">REQUIEM</span>
+      </h1>
+      <p class="tagline">THE DEAD ARE HUNGRY.<br><em>THE SAW IS THIRSTY.</em></p>
+      <button id="start-btn" class="pixel-btn primary" type="button">START GAME</button>
+      <div class="controls">
+        <div class="control"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>MOVE</span></div>
+        <div class="control"><span class="keys"><kbd class="wide">MOUSE</kbd></span><span>AIM</span></div>
+        <div class="control"><span class="keys"><kbd class="wide">HOLD LMB</kbd></span><span>RIP</span></div>
+        <div class="control"><span class="keys"><kbd class="wide">SHIFT</kbd></span><span>DASH</span></div>
+        <div class="control"><span class="keys"><kbd>Q</kbd></span><span>FRENZY</span></div>
+        <div class="control"><span class="keys"><kbd>ESC</kbd></span><span>PAUSE</span></div>
+      </div>
+      <p class="content-note"><span class="warn">18+</span> PIXEL GORE &nbsp;·&nbsp; HEADPHONES RECOMMENDED &nbsp;·&nbsp; MOUSE + KEYBOARD</p>
+    </div>
+    <div class="title-footer">
+      <span>v1.0 // MEAT PROCESSING DIVISION</span>
+      <span class="blink">INSERT COURAGE</span>
+    </div>
+  </div>
+
+  <div id="gameover-screen" class="screen hidden">
+    <div class="modal">
+      <div class="modal-kicker">SHIFT TERMINATED</div>
+      <h2 class="dead-title">YOU ARE MEAT</h2>
+      <p class="dead-sub">The yard keeps what it kills.</p>
+      <div class="stat-grid">
+        <div><span>WAVES</span><strong id="stat-wave">0</strong></div>
+        <div><span>KILLS</span><strong id="stat-kills">0</strong></div>
+        <div><span>SCORE</span><strong id="stat-score">0</strong></div>
+        <div><span>BEST COMBO</span><strong id="stat-combo">0</strong></div>
+      </div>
+      <button id="restart-btn" class="pixel-btn primary" type="button">START GAME</button>
+      <div class="small-note">PRESS ENTER TO CLOCK BACK IN</div>
+    </div>
+  </div>
+
+  <div id="pause-screen" class="screen hidden">
+    <div class="modal compact">
+      <div class="modal-kicker">SAW IDLING</div>
+      <h2 class="pause-title">PAUSED</h2>
+      <p class="dead-sub">The dead will wait. They're polite like that.</p>
+      <button id="resume-btn" class="pixel-btn" type="button">RESUME</button>
+      <div class="small-note">ESC TO RETURN</div>
+    </div>
+  </div>
+
+  <div id="touch-controls" aria-hidden="true">
+    <div id="stick-zone"><div id="stick-base"><div id="stick-knob"></div></div></div>
+    <button id="touch-attack" type="button">SAW</button>
+    <button id="touch-dash" type="button">DASH</button>
+  </div>
+
+  <div id="top-buttons">
+    <button id="mute-btn" class="icon-btn" type="button" aria-label="Mute audio">SOUND ON</button>
+    <button id="fullscreen-btn" class="icon-btn" type="button" aria-label="Fullscreen">FULLSCREEN</button>
+  </div>
+</div>
+<script src="js/core.js"></script>
+<script src="js/world.js"></script>
+<script src="js/props.js"></script>
+<script src="js/game.js"></script>
+<script src="js/render.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
